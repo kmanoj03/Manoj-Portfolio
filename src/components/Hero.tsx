@@ -43,7 +43,7 @@ const Hero = () => {
             View My Work
           </button>
           <a
-            href="/SDE_1-Page.pdf"
+            href="/Manoj Konda-Resume.pdf"
             download
             className="border border-emerald-400 text-emerald-400 px-8 py-3 rounded hover:bg-emerald-400 hover:text-slate-900 transition-all flex items-center gap-2"
           >

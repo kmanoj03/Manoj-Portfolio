@@ -83,7 +83,7 @@ const Navbar = () => {
                 Contact
               </button>
               <a
-                href="/SDE_1-Page.pdf"
+                href="/Manoj Konda-Resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="border border-emerald-400 text-emerald-400 px-4 py-2 rounded hover:bg-emerald-400 hover:text-slate-900 transition-all"

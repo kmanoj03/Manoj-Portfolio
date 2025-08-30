@@ -25,7 +25,7 @@ const Experience = () => {
       icon: <Briefcase className="w-6 h-6" />,
     },
     {
-      title: "Apple Developers Group (VIT)",
+      title: "Apple Developers Group",
       role: "Full Stack Web Developer",
       period: "Mar 2022 – Jul 2023",
       type: "work",
