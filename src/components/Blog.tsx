@@ -86,7 +86,6 @@ const Blog = () => {
             }
           } catch (proxyErr) {
             lastError = proxyErr instanceof Error ? proxyErr : new Error("Proxy failed");
-            console.log(`Proxy ${proxyUrl} failed:`, proxyErr);
             continue; // Try next proxy
           }
         }
@@ -103,8 +102,6 @@ const Blog = () => {
         const parseError = xmlDoc.querySelector("parsererror");
         if (parseError) {
           const errorText = parseError.textContent || "Unknown parsing error";
-          console.error("RSS Parse Error:", errorText);
-          console.error("XML Content Preview:", xmlText.substring(0, 500));
           throw new Error("Failed to parse RSS feed: " + errorText.substring(0, 100));
         }
         
@@ -145,47 +142,112 @@ const Blog = () => {
           // Method 1: Check content:encoded (Medium often puts full HTML here)
           const fullContent = contentEncoded || description;
           if (fullContent) {
-            // Look for img tags in the content
-            const imgMatches = fullContent.match(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi);
+            // Look for ANY img tags (including those with escaped HTML entities)
+            // Medium RSS often has HTML entities like &lt;img instead of <img
+            let imgMatches = fullContent.match(/<img[^>]+>/gi);
+            
+            // Also check for HTML-encoded img tags
+            if (!imgMatches || imgMatches.length === 0) {
+              const encodedMatches = fullContent.match(/&lt;img[^>]+&gt;/gi);
+              if (encodedMatches) {
+                // Decode HTML entities
+                imgMatches = encodedMatches.map((tag: string) => 
+                  tag.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+                ) as RegExpMatchArray;
+              }
+            }
+            
             if (imgMatches && imgMatches.length > 0) {
               // Try to find the first image that looks like a cover/featured image
-              // Medium often uses miro.medium.com for images
               for (const imgTag of imgMatches) {
+                // Try src attribute first
+                let imgUrl = "";
                 const srcMatch = imgTag.match(/src=["']([^"']+)["']/i);
                 if (srcMatch && srcMatch[1]) {
-                  const imgUrl = srcMatch[1];
-                  // Prioritize images from miro.medium.com or CDN
-                  if (imgUrl.includes("miro.medium.com") || 
-                      imgUrl.includes("cdn-images") ||
-                      imgUrl.includes("medium.com")) {
+                  imgUrl = srcMatch[1];
+                }
+                
+                // If no src, try data-src (lazy loading)
+                if (!imgUrl) {
+                  const dataSrcMatch = imgTag.match(/data-src=["']([^"']+)["']/i);
+                  if (dataSrcMatch && dataSrcMatch[1]) {
+                    imgUrl = dataSrcMatch[1];
+                  }
+                }
+                
+                // If still no URL, try data-image
+                if (!imgUrl) {
+                  const dataImageMatch = imgTag.match(/data-image=["']([^"']+)["']/i);
+                  if (dataImageMatch && dataImageMatch[1]) {
+                    imgUrl = dataImageMatch[1];
+                  }
+                }
+                
+                if (imgUrl) {
+                  // Decode HTML entities in URL
+                  imgUrl = imgUrl
+                    .replace(/&amp;/g, "&")
+                    .replace(/&#x2F;/g, "/")
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'")
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>');
+                  
+                  // Handle Medium's CDN URLs - accept ANY valid HTTP(S) URL
+                  if (imgUrl.startsWith("http://") || imgUrl.startsWith("https://")) {
                     coverImage = imgUrl;
                     break; // Found a good cover image
-                  } else if (!coverImage) {
-                    // Keep first image as fallback
-                    coverImage = imgUrl;
                   }
                 }
               }
             }
             
-            // If no img tag found, look for data-image or background-image
+            // Method 2: Look for figure tags with img inside (Medium structure)
             if (!coverImage) {
-              const dataImageMatch = fullContent.match(/data-image=["']([^"']+)["']/i);
-              if (dataImageMatch && dataImageMatch[1]) {
-                coverImage = dataImageMatch[1];
+              const figureMatch = fullContent.match(/<figure[^>]*>[\s\S]*?<img[^>]+src=["']([^"']+)["'][^>]*>/i);
+              if (figureMatch && figureMatch[1]) {
+                let imgUrl = figureMatch[1]
+                  .replace(/&amp;/g, "&")
+                  .replace(/&#x2F;/g, "/");
+                if (imgUrl.startsWith("http")) {
+                  coverImage = imgUrl;
+                }
               }
             }
             
-            // Look for background-image in style attributes
+            // Method 3: Look for background-image in style attributes
             if (!coverImage) {
-              const bgImageMatch = fullContent.match(/background-image:\\s*url\\(["']?([^"'\\)]+)["']?\\)/i);
+              const bgImageMatch = fullContent.match(/background-image:\s*url\(["']?([^"'\\)]+)["']?\)/i);
               if (bgImageMatch && bgImageMatch[1]) {
-                coverImage = bgImageMatch[1];
+                let imgUrl = bgImageMatch[1]
+                  .replace(/&amp;/g, "&")
+                  .replace(/&#x2F;/g, "/");
+                if (imgUrl.startsWith("http")) {
+                  coverImage = imgUrl;
+                }
+              }
+            }
+            
+            // Method 4: Look for any URL pattern that looks like an image
+            if (!coverImage) {
+              // Look for common image hosting patterns
+              const urlPatterns = [
+                /https?:\/\/[^\s<>"']+\.(jpg|jpeg|png|gif|webp|svg)/gi,
+                /https?:\/\/miro\.medium\.com\/[^\s<>"']+/gi,
+                /https?:\/\/cdn-images[^\s<>"']+/gi,
+              ];
+              
+              for (const pattern of urlPatterns) {
+                const matches = fullContent.match(pattern);
+                if (matches && matches.length > 0) {
+                  coverImage = matches[0];
+                  break;
+                }
               }
             }
           }
           
-          // Method 2: Try media:content or media:thumbnail (for RSS feeds with media extensions)
+          // Method 5: Try media:content or media:thumbnail (for RSS feeds with media extensions)
           if (!coverImage) {
             const mediaContent = item.querySelector("media\\:content, media\\:thumbnail");
             if (mediaContent) {
@@ -193,7 +255,7 @@ const Blog = () => {
             }
           }
           
-          // Method 3: Try enclosure tag
+          // Method 6: Try enclosure tag
           if (!coverImage) {
             const enclosure = item.querySelector("enclosure[type^='image']");
             if (enclosure) {
@@ -201,11 +263,14 @@ const Blog = () => {
             }
           }
           
-          // Method 4: Look for og:image meta tag pattern in content
-          if (!coverImage && fullContent) {
-            const ogImageMatch = fullContent.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
-            if (ogImageMatch && ogImageMatch[1]) {
-              coverImage = ogImageMatch[1];
+          // Clean up the image URL
+          if (coverImage) {
+            // Remove any trailing spaces or newlines
+            coverImage = coverImage.trim();
+            
+            // Remove query params if they exist and add optimal size for Medium
+            if (coverImage.includes("miro.medium.com") || coverImage.includes("cdn-images")) {
+              coverImage = coverImage.split("?")[0] + "?w=800";
             }
           }
 
@@ -262,6 +327,80 @@ const Blog = () => {
           });
         });
 
+        // If no images found in RSS, try fetching og:image from actual Medium post pages
+        if (blogPosts.length > 0 && blogPosts.some(post => !post.coverImage)) {
+          // Fetch images for posts that don't have them
+          const postsWithoutImages = blogPosts.filter(post => !post.coverImage);
+          
+          await Promise.all(
+            postsWithoutImages.map(async (post) => {
+              try {
+                // Use the full Medium URL
+                const postUrl = post.slug.startsWith("http") ? post.slug : `https://medium.com/@manoj03.work/${post.slug}`;
+                
+                // Try to fetch the page through a proxy to get og:image
+                const proxies = [
+                  "https://api.allorigins.win/get?url=",
+                  "https://corsproxy.io/?",
+                ];
+                
+                for (const proxyUrl of proxies) {
+                  try {
+                    const response = await fetch(proxyUrl + encodeURIComponent(postUrl));
+                    if (!response.ok) continue;
+                    
+                    let html = "";
+                    if (proxyUrl.includes("allorigins")) {
+                      const data = await response.json();
+                      html = data.contents || "";
+                    } else {
+                      // corsproxy.io returns HTML directly
+                      html = await response.text();
+                    }
+                    
+                    if (!html || typeof html !== "string") continue;
+                    
+                    // Extract og:image from HTML
+                    const ogImageMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+                    if (ogImageMatch && ogImageMatch[1]) {
+                      let imgUrl = ogImageMatch[1]
+                        .replace(/&amp;/g, "&")
+                        .replace(/&#x2F;/g, "/");
+                      
+                      if (imgUrl.startsWith("http")) {
+                        post.coverImage = imgUrl;
+                        break; // Success, exit proxy loop
+                      }
+                    }
+                    
+                    // Also try twitter:image as fallback
+                    if (!post.coverImage) {
+                      const twitterImageMatch = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
+                      if (twitterImageMatch && twitterImageMatch[1]) {
+                        let imgUrl = twitterImageMatch[1]
+                          .replace(/&amp;/g, "&")
+                          .replace(/&#x2F;/g, "/");
+                        
+                        if (imgUrl.startsWith("http")) {
+                          post.coverImage = imgUrl;
+                          break;
+                        }
+                      }
+                    }
+                  } catch (proxyErr) {
+                    continue;
+                  }
+                }
+              } catch (err) {
+                // Silently fail - image fetching is a bonus feature
+              }
+            })
+          );
+          
+          // Update state with images after fetching
+          setPosts([...blogPosts]);
+        }
+
         if (blogPosts.length > 0) {
           setPosts(blogPosts);
           setError(null);
@@ -269,11 +408,8 @@ const Blog = () => {
           throw new Error("No valid blog posts found after parsing");
         }
       } catch (err) {
-        console.error("Error fetching blog posts:", err);
-        
         // Fallback to manual posts if RSS fetch fails
         if (manualPosts.length > 0) {
-          console.log("Using manual blog posts as fallback");
           setPosts(manualPosts);
           setError(null);
         } else {
@@ -368,12 +504,17 @@ const Blog = () => {
                 className="bg-gradient-to-br from-slate-800 to-slate-800/80 rounded-lg overflow-hidden hover:from-slate-700 hover:to-slate-700/80 transition-all duration-300 border border-slate-700/50 hover:border-emerald-400/30 group"
               >
                 {post.coverImage && (
-                  <div className="aspect-video overflow-hidden bg-slate-700">
+                  <div className="aspect-video overflow-hidden bg-slate-700 relative">
                     <img
                       src={post.coverImage}
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
+                      onError={(e) => {
+                        // If image fails to load, hide it
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                      }}
                     />
                   </div>
                 )}
