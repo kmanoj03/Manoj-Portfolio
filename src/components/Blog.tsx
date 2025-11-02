@@ -118,7 +118,7 @@ const Blog = () => {
         
         const blogPosts: BlogPost[] = [];
         items.forEach((item, index) => {
-          if (index >= 6) return; // Limit to 6 posts
+          if (index >= 3) return; // Limit to 3 posts
           
           // Handle both RSS 2.0 and Atom formats
           const title = item.querySelector("title")?.textContent?.trim() || "";
