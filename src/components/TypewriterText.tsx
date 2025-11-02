@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 const TypewriterText = () => {
   const phrases = [
-    "Actively seeking Summer 2026 SDE Internships",
+    "Actively seeking Summer 2026 Internships",
     "Full Stack Developer",
     "Application Security Enthusiast",
     "I build secure and scalable web apps.",

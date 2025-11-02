@@ -85,20 +85,20 @@ const Skills = () => {
     : skills.filter(skill => skill.category === activeCategory);
 
   return (
-    <section id="skills" className="py-20 bg-slate-900">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-emerald-400 mb-4">Technical Skills</h2>
-          <p className="text-gray-400 text-lg">Technologies and frameworks I work with</p>
+    <section id="skills" className="py-12 sm:py-16 lg:py-20 bg-slate-900">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl font-bold text-emerald-400 mb-3 sm:mb-4">Technical Skills</h2>
+          <p className="text-gray-400 text-sm sm:text-base lg:text-lg">Technologies and frameworks I work with</p>
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 mb-8 sm:mb-12">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-6 py-3 rounded-full text-sm font-medium transition-all ${
+              className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 activeCategory === category
                   ? 'bg-emerald-400 text-slate-900'
                   : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
@@ -110,17 +110,17 @@ const Skills = () => {
         </div>
 
         {/* Skills Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
           {filteredSkills.map((skill, index) => (
             <div
               key={skill.name}
-              className="group flex flex-col items-center p-6 bg-slate-800 rounded-2xl hover:bg-slate-700 transition-all duration-300 hover:scale-105"
+              className="group flex flex-col items-center p-3 sm:p-4 lg:p-6 bg-slate-800 rounded-xl lg:rounded-2xl hover:bg-slate-700 transition-all duration-300 hover:scale-105"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className={`w-16 h-16 ${skill.bgColor} rounded-2xl flex items-center justify-center text-2xl text-white mb-4 group-hover:scale-110 transition-transform`}>
+              <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 ${skill.bgColor} rounded-xl lg:rounded-2xl flex items-center justify-center text-lg sm:text-xl lg:text-2xl text-white mb-2 sm:mb-3 lg:mb-4 group-hover:scale-110 transition-transform`}>
                 {skill.icon}
               </div>
-              <h3 className="text-white font-medium text-center text-sm">{skill.name}</h3>
+              <h3 className="text-white font-medium text-center text-xs sm:text-sm">{skill.name}</h3>
             </div>
           ))}
         </div>

@@ -1,116 +1,118 @@
-import React from "react";
 import { ExternalLink, Github } from "lucide-react";
-import { FaCar, FaChartLine, FaShieldAlt } from "react-icons/fa";
+import { FaCar, FaDatabase, FaShieldAlt } from "react-icons/fa";
 
 const Projects = () => {
   const projects = [
     {
-      title: "UniRide",
-      period: "Sep 2024 – Mar 2025",
-      category: "Full Stack Developer",
+      title: "ConfigGuardian",
+      // period: "Feb 2025 – Present",
+      // category: "Full Stack Developer",
       description:
-        "Built a scalable ride-sharing platform for VIT students, handling over 500 concurrent ride requests. Implemented host-based ride controls, peer reviews, real-time chat with Socket.io, and CRON fallback for auto-completion. Applied threat modeling to reduce security risks by 30%, improving overall platform reliability.",
+        "LLM-powered config auditor fortifying DevSecOps pipelines. Scans Dockerfiles & Kubernetes YAMLs for misconfigurations, scores severity in real time using Gemini, and anchors verified reports on Fetch.ai’s decentralized ledger.",
       techStack: [
-        "React.js",
+        "TypeScript",
         "Node.js",
         "Express.js",
-        "MongoDB",
-        "Socket.io",
-        "Tailwind CSS",
-        "CRON Jobs",
-        "JWT",
-      ],
-      icon: <FaCar className="w-6 h-6" />,
-      codeLink: "#",
-      liveLink: "#",
-    },
-    {
-      title: "Personal Finance Tracker",
-      period: "Jan 2024 – Feb 2024",
-      category: "Full Stack Developer",
-      description:
-        "Developed a full-stack finance dashboard to help users monitor expenses and savings goals. Integrated real-time analytics using Recharts, added a 3D landing page with Three.js, and enforced secure data access via JWT-based authentication and input validation.",
-      techStack: [
-        "React.js",
-        "Node.js",
-        "Express.js",
-        "MongoDB",
-        "Three.js",
-        "Recharts",
-        "JWT",
-      ],
-      icon: <FaChartLine className="w-6 h-6" />,
-      codeLink: "#",
-      liveLink: "#",
-    },
-    {
-      title: "ARP & IP Spoofing Attack Mitigation",
-      period: "Oct 2023 – Nov 2023",
-      category: "Security Researcher",
-      description:
-        "Simulated ARP and IP spoofing attacks using Ettercap and hping3, redirecting ~80% of traffic to demonstrate interception techniques. Hardened network with ingress/egress filtering and verified results with Wireshark, enhancing security against spoofed packets.",
-      techStack: [
-        "Wireshark",
-        "Ettercap",
-        "hping3",
-        "Firewall Filtering",
-        "Linux Networking Tools",
+        "React",
+        "Gemini LLM APIs",
+        "Fetch.ai Agentverse",
       ],
       icon: <FaShieldAlt className="w-6 h-6" />,
-      codeLink: "#",
+      codeLink: "https://github.com/kmanoj03/config-guardian",
+      liveLink: "#",
+    },
+    {
+      title: "Memory Engine",
+      // period: "Oct 2024 – Jan 2025",
+      // category: "Full Stack Developer",
+      description:
+        "Intelligent debugging memory that recalls past production fixes with hybrid semantic + metadata search. Powered by MongoDB Atlas Vector Search to surface high-fidelity matches and boost recall accuracy by 25%.",
+      techStack: [
+        "TypeScript",
+        "Node.js",
+        "Express.js",
+        "MongoDB Atlas Vector Search",
+        "LangChain",
+      ],
+      icon: <FaDatabase className="w-6 h-6" />,
+      codeLink: "https://github.com/kmanoj03/memory-engine",
+      liveLink: "#",
+    },
+    {
+      title: "UniRide",
+      // period: "Sep 2024 – Mar 2025",
+      // category: "Full Stack Developer",
+      description:
+        "Campus-scale ride-sharing app built on the MERN stack. Features live Socket.io chat, host-controlled ride management, and CRON-based reliability layer, hardened through threat modeling to reduce security risks by 30%.",
+      techStack: [
+        "TypeScript",
+        "Node.js",
+        "Express.js",
+        "React.js",
+        "MongoDB",
+        "Socket.io",
+        "TailwindCSS",
+        "CRON Jobs",
+      ],
+      icon: <FaCar className="w-6 h-6" />,
+      codeLink: "https://github.com/kmanoj03/UniRide",
       liveLink: "#",
     },
   ];
 
   return (
-    <section id="projects" className="py-20 bg-slate-900">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-emerald-400 mb-4">Projects</h2>
+    <section id="projects" className="py-12 sm:py-16 lg:py-20 bg-slate-900">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl font-bold text-emerald-400 mb-4">Projects</h2>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project, index) => (
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {projects.map((project) => (
             <div
               key={project.title}
-              className="bg-slate-800 rounded-lg p-6 hover:bg-slate-700 transition-all duration-300 group"
+              className="bg-slate-800 rounded-lg p-4 sm:p-6 hover:bg-slate-700 transition-all duration-300 group"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="text-emerald-400">{project.icon}</div>
                 <div className="flex space-x-2">
-                  {/* <a
+                  <a
                     href={project.codeLink}
                     className="text-gray-400 hover:text-emerald-400 transition-colors"
                   >
                     <Github size={20} />
-                  </a> */}
-                  {/* <a
+                  </a>
+                  <a
                     href={project.liveLink}
                     className="text-gray-400 hover:text-emerald-400 transition-colors"
                   >
                     <ExternalLink size={20} />
-                  </a> */}
+                  </a>
                 </div>
               </div>
 
-              <h3 className="text-emerald-400 text-xl font-bold mb-2">
+              <h3 className="text-emerald-400 text-lg sm:text-xl font-bold mb-2">
                 {project.title}
               </h3>
-              <p className="text-gray-400 text-sm mb-4">
-                {project.period} | {project.category}
-              </p>
+              {((project as any).period || (project as any).category) && (
+                <p className="text-gray-400 text-xs sm:text-sm mb-4">
+                  {(project as any).period && (project as any).category
+                    ? `${(project as any).period} | ${(project as any).category}`
+                    : (project as any).period || (project as any).category}
+                </p>
+              )}
 
-              <p className="text-gray-300 text-sm mb-6 leading-relaxed">
+              <p className="text-gray-300 text-xs sm:text-sm mb-6 leading-relaxed">
                 {project.description}
               </p>
 
-              <div className="mb-6">
-                <p className="text-gray-400 text-sm mb-2">Tech Stack:</p>
-                <div className="flex flex-wrap gap-2">
+              <div className="mb-4 sm:mb-6">
+                <p className="text-gray-400 text-xs sm:text-sm mb-2">Tech Stack:</p>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {project.techStack.map((tech) => (
                     <span
                       key={tech}
-                      className="text-emerald-400 text-xs bg-emerald-400/10 px-2 py-1 rounded"
+                      className="text-emerald-400 text-[10px] sm:text-xs bg-emerald-400/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded"
                     >
                       {tech}
                     </span>
